@@ -1,0 +1,27 @@
+#!/usr/bin/python3
+
+from pygccxml import parser
+from pyplusplus import module_builder
+
+generator_path = "/usr/bin/castxml"
+generator_name = "castxml"
+compiler = "gnu"
+compiler_path = "/usr/bin/gcc"
+
+xml_generator_config = parser.xml_generator_configuration_t(
+    xml_generator_path=generator_path,
+    xml_generator=generator_name,
+    compiler=compiler,
+    compiler_path=compiler_path)
+
+header_collection = [@public_headers@]
+
+builder = module_builder.module_builder_t(
+    header_collection,
+    xml_generator_path = generator_path,
+    xml_generator_config = xml_generator_config)
+
+builder.classes().add_properties(exclude_accessors=True)
+builder.build_code_creator(module_name="pylib_auto")
+
+builder.write_module('pylib_auto.cpp')
