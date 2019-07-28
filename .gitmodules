@@ -1,0 +1,3 @@
+[submodule "lib/msmp"]
+	path = lib/msmp
+	url = https://github.com/matgla/MSMP.git
