@@ -54,9 +54,13 @@ class build_ext(build_ext_orig):
 setup(
     name='msmp_python',
     version='0.1',
-    packages=['msmp_core'],
+    packages=['msmp_python'],
     ext_modules=[CMakeExtension('.')],
     cmdclass={
         'build_ext': build_ext,
-    }
+    },
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+    ],
 )
