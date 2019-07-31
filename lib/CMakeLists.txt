@@ -1,4 +1,5 @@
 set (BUILD_SHARED ON)
+set (BUILD_FOR_EXTERNAL_LANGUAGE ON)
 fetch_module_via_branch(lib/msmp ${PROJECT_SOURCE_DIR}/lib/msmp ${PROJECT_SOURCE_DIR} "master")
 
 find_headers(${CMAKE_CURRENT_SOURCE_DIR}/msmp headers)

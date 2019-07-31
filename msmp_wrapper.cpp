@@ -2,8 +2,28 @@
 #include "msmp_api/i_connection.hpp"
 
 #include <boost/python.hpp>
+#include <boost/python/stl_iterator.hpp>
+#include <boost/python/call.hpp>
+
+#include <iostream>
 
 using namespace boost::python;
+
+template <typename T>
+std::vector<T> to_vector(const object& iterable)
+{
+    return std::vector<T>(stl_input_iterator<T>(iterable), stl_input_iterator<T>());
+}
+
+
+template <typename T>
+boost::python::list vector_to_list(const std::vector<T>& v)
+{
+    boost::python::object get_iter = boost::python::iterator<std::vector<T>>();
+    boost::python::object iter(v);
+    boost::python::list l(iter);
+    return l;
+}
 
 class IConnectionWrap : public msmp_api::IConnection, public wrapper<msmp_api::IConnection>
 {
@@ -49,11 +69,20 @@ BOOST_PYTHON_MODULE(msmp_core)
         .def("start", &msmp_api::TcpHost::start)
         .def("onConnected", +[](msmp_api::TcpHost& self, object o) {
             self.onConnected(o);
-        });
+        })
+        .def("getConnection", &msmp_api::TcpHost::getConnection);
 
     class_<IConnectionWrap, boost::noncopyable>("IConnection")
         .def("start", pure_virtual(&msmp_api::IConnection::start))
         .def("stop", pure_virtual(&msmp_api::IConnection::stop))
         .def("handlePeerConnected", pure_virtual(&msmp_api::IConnection::handlePeerConnected))
-        .def("peerDisconnected", pure_virtual(&msmp_api::IConnection::peerDisconnected));
+        .def("peerDisconnected", pure_virtual(&msmp_api::IConnection::peerDisconnected))
+        .def("onData", +[](msmp_api::IConnection& self, object o) {
+            self.onData([o](uint8_t id, const std::vector<uint8_t>& payload) {
+                std::cerr << "here" << std::endl;
+                call(o, self, id, payload);
+            });
+        });
+
+    register_ptr_to_python<std::shared_ptr<msmp_api::IConnection>>();
 }
