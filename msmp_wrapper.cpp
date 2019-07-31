@@ -4,6 +4,7 @@
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
 #include <boost/python/call.hpp>
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
 #include <iostream>
 
@@ -65,6 +66,9 @@ class IConnectionWrap : public msmp_api::IConnection, public wrapper<msmp_api::I
 
 BOOST_PYTHON_MODULE(msmp_core)
 {
+    class_<std::vector<uint8_t>>("MyList")
+        .def(vector_indexing_suite<std::vector<uint8_t>>() );
+
     class_<msmp_api::TcpHost>("TcpHost", init<std::string, uint16_t, std::string, uint16_t>())
         .def("start", &msmp_api::TcpHost::start)
         .def("onConnected", +[](msmp_api::TcpHost& self, object o) {
@@ -77,10 +81,9 @@ BOOST_PYTHON_MODULE(msmp_core)
         .def("stop", pure_virtual(&msmp_api::IConnection::stop))
         .def("handlePeerConnected", pure_virtual(&msmp_api::IConnection::handlePeerConnected))
         .def("peerDisconnected", pure_virtual(&msmp_api::IConnection::peerDisconnected))
-        .def("onData", +[](msmp_api::IConnection& self, object o) {
-            self.onData([o](uint8_t id, const std::vector<uint8_t>& payload) {
-                std::cerr << "here" << std::endl;
-                call(o, self, id, payload);
+        .def("onData", +[](msmp_api::IConnection& self, object o, object callback) {
+            self.onData([o, callback](uint8_t id, const std::vector<uint8_t>& payload) {
+                call<void>(callback.ptr(), id, payload);
             });
         });
 

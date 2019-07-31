@@ -10,7 +10,7 @@ class MessageBroker(object):
 
     def add_connection(self, connection):
         self.connections.append(connection)
-        connection.onData(self.handle_data)
+        connection.onData(self, self.handle_data)
 
     def add_handler(self, handler):
         self.handlers.append(handler)
@@ -20,5 +20,7 @@ class MessageBroker(object):
             connection.send(message, on_success, on_failure)
 
     def handle_data(self, id, payload):
-        print("Received message with id: ")
+        for handler in self.handlers:
+            if handler.match(id, payload):
+                handler.handle(payload)
 

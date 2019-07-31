@@ -5,3 +5,4 @@ msmp_core_python.egg-info
 msmp_python.egg-info
 dist
 build*/
+__pycache__
