@@ -3,31 +3,22 @@
 
 #include <boost/python.hpp>
 #include <boost/python/stl_iterator.hpp>
+#include <boost/python/list.hpp>
 #include <boost/python/call.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 
-#include <iostream>
-
 using namespace boost::python;
 
-template <typename T>
-std::vector<T> to_vector(const object& iterable)
+template<typename T>
+std::vector<T> list_to_vector(const object& iterable)
 {
-    return std::vector<T>(stl_input_iterator<T>(iterable), stl_input_iterator<T>());
-}
-
-
-template <typename T>
-boost::python::list vector_to_list(const std::vector<T>& v)
-{
-    boost::python::object get_iter = boost::python::iterator<std::vector<T>>();
-    boost::python::object iter(v);
-    boost::python::list l(iter);
-    return l;
+    return std::vector<T>(stl_input_iterator<T>(iterable),
+                            stl_input_iterator<T>());
 }
 
 class IConnectionWrap : public msmp_api::IConnection, public wrapper<msmp_api::IConnection>
 {
+    public:
     void start()
     {
         this->get_override("start")();
@@ -71,8 +62,10 @@ BOOST_PYTHON_MODULE(msmp_core)
 
     class_<msmp_api::TcpHost>("TcpHost", init<std::string, uint16_t, std::string, uint16_t>())
         .def("start", &msmp_api::TcpHost::start)
-        .def("onConnected", +[](msmp_api::TcpHost& self, object o) {
-            self.onConnected(o);
+        .def("onConnected", +[](msmp_api::TcpHost& self, object o, object callback) {
+            self.onConnected([o, callback] {
+                call<void>(callback.ptr());
+            });
         })
         .def("getConnection", &msmp_api::TcpHost::getConnection);
 
@@ -85,6 +78,14 @@ BOOST_PYTHON_MODULE(msmp_core)
             self.onData([o, callback](uint8_t id, const std::vector<uint8_t>& payload) {
                 call<void>(callback.ptr(), id, payload);
             });
+        })
+        .def("onConnected", +[](msmp_api::IConnection& self, object o, object callback) {
+            self.onConnected([o, callback] {
+                call<void>(callback.ptr());
+            });
+        })
+        .def("send", +[](msmp_api::IConnection& self, list data, object on_success, object on_failure) {
+            self.send(list_to_vector<uint8_t>(data), on_success, on_failure);
         });
 
     register_ptr_to_python<std::shared_ptr<msmp_api::IConnection>>();
