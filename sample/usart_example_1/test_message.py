@@ -1,20 +1,19 @@
-from message_deserializer import MessageDeserializer
-from serialized_message import SerializedMessage
+from msmp_python import MessageDeserializer
+from msmp_python import SerializedMessage
 
 from struct import error
 
 import sys
 
-class MessageA():
+class TestMessage():
     def __init__(self):
-        self.id = 1
-        self.value = 0
+        self.id = 123
         self.name = ""
 
     def serialize(self):
         try:
             message = SerializedMessage()
-            serialized = message.compose_u8(self.id).compose_u32(self.value).compose_string(self.name)
+            serialized = message.compose_u8(self.id).compose_string(self.name)
         except TypeError as err:
             print(err)
         except:
@@ -23,10 +22,9 @@ class MessageA():
 
     def deserialize(payload):
         reader = MessageDeserializer(payload)
-        msg = MessageA()
+        msg = TestMessage()
         try:
             reader.drop_u8()
-            msg.value = reader.decompose_i32()
             msg.name = reader.decompose_string()
 
         except error as err:

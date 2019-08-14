@@ -1,4 +1,5 @@
 #include "msmp_api/tcp/tcp_host.hpp"
+#include "msmp_api/usart/usart_host.hpp"
 #include "msmp_api/i_connection.hpp"
 
 #include <boost/python.hpp>
@@ -6,6 +7,8 @@
 #include <boost/python/list.hpp>
 #include <boost/python/call.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
+
 
 using namespace boost::python;
 
@@ -68,6 +71,15 @@ BOOST_PYTHON_MODULE(msmp_core)
             });
         })
         .def("getConnection", &msmp_api::TcpHost::getConnection);
+
+    class_<msmp_api::UsartHost>("UsartHost", init<std::string, std::string>())
+        .def("start", &msmp_api::UsartHost::start)
+        .def("onConnected", +[](msmp_api::UsartHost& self, object o, object callback) {
+            self.onConnected([o, callback] {
+                call<void>(callback.ptr());
+            });
+        })
+        .def("getConnection", &msmp_api::UsartHost::getConnection);
 
     class_<IConnectionWrap, boost::noncopyable>("IConnection")
         .def("start", pure_virtual(&msmp_api::IConnection::start))
