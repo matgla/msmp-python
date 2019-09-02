@@ -18,8 +18,18 @@ class Main():
 
         self.host.onConnected(self, self.connection_callback)
 
+
+
     def start(self):
+        print("Starting")
         self.host.start()
+
+        while True:
+            try:
+                time.sleep(2)
+                print("Here it is")
+            except KeyboardInterrupt:
+                break
 
     def connection_callback(self):
         print("Peer is connected!!!!")
@@ -31,8 +41,3 @@ class Main():
 m = Main()
 m.start()
 
-while True:
-    try:
-        pass
-    except KeyboardInterrupt:
-        break
